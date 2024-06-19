@@ -715,10 +715,7 @@ class ReactAgent(Agent):
         while final_answer is None and iteration < self.max_iterations:
             try:
                 if self.planning_interval is not None and iteration % self.planning_interval == 0:
-                    # run planning step
                     self.planning_step(task, is_first_step=(iteration == 0))
-                if self.planning_interval is None:
-                    assert False
                 step_logs = self.step()
                 if "final_answer" in step_logs:
                     final_answer = step_logs["final_answer"]

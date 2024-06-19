@@ -51,7 +51,7 @@ LIST_SAFE_MODULES = [
 ]
 
 PRINT_OUTPUTS = ""
-
+OPERATIONS_COUNT, MAX_OPERATIONS = 0, 500000
 
 class BreakException(Exception):
     pass
@@ -639,6 +639,10 @@ def evaluate_ast(
             The list of modules that can be imported by the code. By default, only a few safe modules are allowed.
             Add more at your own risk!
     """
+    global OPERATIONS_COUNT
+    if OPERATIONS_COUNT >= MAX_OPERATIONS:
+        raise InterpreterError(f"Reached {MAX_OPERATIONS} operations: this is too much, there is probably an infinite loop somewhere in the code.")
+    OPERATIONS_COUNT += 1
     if isinstance(expression, ast.Assign):
         # Assignement -> we evaluate the assignement which should update the state
         # We return the variable assigned as it may be used to determine the final result.
@@ -806,13 +810,16 @@ def evaluate_python_code(
     result = None
     global PRINT_OUTPUTS
     PRINT_OUTPUTS = ""
+    global OPERATIONS_COUNT
+    OPERATIONS_COUNT = 0
     for node in expression.body:
         try:
             result = evaluate_ast(node, state, tools, authorized_imports)
         except InterpreterError as e:
-            msg = f"Evaluation stopped at line '{ast.get_source_segment(code, node)}' because of the following error:\n{e}"
+            msg=""
             if len(PRINT_OUTPUTS) > 0:
-                msg += f"Executing code yielded these outputs:\n{PRINT_OUTPUTS}\n====\n"
+                msg += f"Print outputs:\n{PRINT_OUTPUTS}\n====\n"
+            msg += f"EXECUTION FAILED:\nEvaluation stopped at line '{ast.get_source_segment(code, node)}' because of the following error:\n{e}"
             raise InterpreterError(msg)
         finally:
             state["print_outputs"] = PRINT_OUTPUTS
