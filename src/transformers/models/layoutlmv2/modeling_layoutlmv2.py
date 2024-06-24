@@ -725,6 +725,8 @@ class LayoutLMv2Model(LayoutLMv2PreTrainedModel):
         self.encoder = LayoutLMv2Encoder(config)
         self.pooler = LayoutLMv2Pooler(config)
 
+        self.ablation_config = config.ablation_config
+
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -885,7 +887,6 @@ class LayoutLMv2Model(LayoutLMv2PreTrainedModel):
             attention_mask = torch.ones(input_shape, device=device)
 
         visual_attention_mask = torch.ones(visual_shape, device=device)
-        final_attention_mask = torch.cat([attention_mask, visual_attention_mask], dim=1)
 
         if token_type_ids is None:
             token_type_ids = torch.zeros(input_shape, dtype=torch.long, device=device)
@@ -898,7 +899,6 @@ class LayoutLMv2Model(LayoutLMv2PreTrainedModel):
         visual_position_ids = torch.arange(0, visual_shape[1], dtype=torch.long, device=device).repeat(
             input_shape[0], 1
         )
-        final_position_ids = torch.cat([position_ids, visual_position_ids], dim=1)
 
         if bbox is None:
             bbox = torch.zeros(tuple(list(input_shape) + [4]), dtype=torch.long, device=device)
@@ -916,7 +916,15 @@ class LayoutLMv2Model(LayoutLMv2PreTrainedModel):
             bbox=visual_bbox,
             position_ids=visual_position_ids,
         )
-        final_emb = torch.cat([text_layout_emb, visual_emb], dim=1)
+
+        if self.ablation_config["vision"]:
+            final_emb = text_layout_emb
+            final_attention_mask = attention_mask
+            final_position_ids = position_ids
+        else:
+            final_emb = torch.cat([text_layout_emb, visual_emb], dim=1)
+            final_attention_mask = torch.cat([attention_mask, visual_attention_mask], dim=1)
+            final_position_ids = torch.cat([position_ids, visual_position_ids], dim=1)
 
         extended_attention_mask = final_attention_mask.unsqueeze(1).unsqueeze(2)
 
