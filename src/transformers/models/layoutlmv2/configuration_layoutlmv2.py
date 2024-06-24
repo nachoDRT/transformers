@@ -114,6 +114,7 @@ class LayoutLMv2Config(PretrainedConfig):
     >>> # Accessing the model configuration
     >>> configuration = model.config
     ```"""
+
     model_type = "layoutlmv2"
 
     def __init__(
@@ -145,6 +146,7 @@ class LayoutLMv2Config(PretrainedConfig):
         has_spatial_attention_bias=True,
         has_visual_segment_embedding=False,
         detectron2_config_args=None,
+        ablation_config=None,
         **kwargs
     ):
         super().__init__(
@@ -179,6 +181,7 @@ class LayoutLMv2Config(PretrainedConfig):
         self.detectron2_config_args = (
             detectron2_config_args if detectron2_config_args is not None else self.get_default_detectron2_config()
         )
+        self.ablation_config = ablation_config
 
     @classmethod
     def get_default_detectron2_config(self):
