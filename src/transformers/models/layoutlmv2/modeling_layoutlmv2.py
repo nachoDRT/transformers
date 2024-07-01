@@ -514,11 +514,17 @@ class LayoutLMv2PreTrainedModel(PreTrainedModel):
         if isinstance(module, nn.Linear):
             # Slightly different from the TF version which uses truncated_normal for initialization
             # cf https://github.com/pytorch/pytorch/pull/5617
-            module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
+            if hasattr(self.config, "custom_weights_init") and self.config.custom_weights_init.get("zeros", False):
+                module.weight.data.zero_()
+            else:
+                module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
             if module.bias is not None:
                 module.bias.data.zero_()
         elif isinstance(module, nn.Embedding):
-            module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
+            if hasattr(self.config, "custom_weights_init") and self.config.custom_weights_init.get("zeros", False):
+                module.weight.data.zero_()
+            else:
+                module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
             if module.padding_idx is not None:
                 module.weight.data[module.padding_idx].zero_()
         elif isinstance(module, nn.LayerNorm):

@@ -147,6 +147,7 @@ class LayoutLMv2Config(PretrainedConfig):
         has_visual_segment_embedding=False,
         detectron2_config_args=None,
         ablation_config=None,
+        custom_weights_init=None,
         **kwargs
     ):
         super().__init__(
@@ -182,6 +183,7 @@ class LayoutLMv2Config(PretrainedConfig):
             detectron2_config_args if detectron2_config_args is not None else self.get_default_detectron2_config()
         )
         self.ablation_config = ablation_config
+        self.custom_weights_init = custom_weights_init
 
     @classmethod
     def get_default_detectron2_config(self):
