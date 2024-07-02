@@ -927,6 +927,11 @@ class LayoutLMv2Model(LayoutLMv2PreTrainedModel):
             final_emb = text_layout_emb
             final_attention_mask = attention_mask
             final_position_ids = position_ids
+
+        elif self.ablation_config["text"]:
+            final_emb = visual_emb
+            final_attention_mask = visual_attention_mask
+            final_position_ids = visual_position_ids
         else:
             final_emb = torch.cat([text_layout_emb, visual_emb], dim=1)
             final_attention_mask = torch.cat([attention_mask, visual_attention_mask], dim=1)
